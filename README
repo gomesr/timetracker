@@ -7,14 +7,24 @@ desktop by recording the activities using the gnome time tracker applet (also
 known as the hamster project). It can be easily extended to work on other 
 desktop environments as well as other timetracking/notification systems.
 
+execution
+---------
+
+After checking out the tool it can easily be executed directly from the src 
+directory. Before you execute you should copy the template configuration file
+from timetracker.conf.template to ~/.timetracker.conf 
+
 installation
 ------------
+* under construction * 
 
 configuring
 -----------
+* under construction * 
 
 creating your own tracker
 -------------------------
+* under construction * 
 
 notes
 -----
