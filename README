@@ -1,0 +1,28 @@
+timetracker
+-----------
+
+A simple python utility that can be used to track what you're doing on your
+computer at any moment. Was first written to track what I did on my gnome
+desktop by recording the activities using the gnome time tracker applet (also
+known as the hamster project). It can be easily extended to work on other 
+desktop environments as well as other timetracking/notification systems.
+
+installation
+------------
+
+configuring
+-----------
+
+creating your own tracker
+-------------------------
+
+notes
+-----
+
+I used two different approaches to making the tracker and window manager plug-in 
+architecture because I wanted to see an object oriented and non object oriented
+method but also because they have slightly different requirements. While the 
+tracker itself has a few more methods to implement and keep track of data. The
+window manager only has to return the title of the currently active window and 
+because of that just a simple required function to be created in the module is 
+enough.

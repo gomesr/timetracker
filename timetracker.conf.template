@@ -1,0 +1,31 @@
+
+# main configuration section contains important values for timetracker 
+# configuration
+[main]
+# libnotify is used mainly for testing 
+#tracker=libnotify:LibNotifyTracker
+tracker=hamster:HamsterTracker
+
+# Tags can be identified by keywords in the title of the application which will
+# then be attached to the activities description.
+# 
+# The tags should be separated by a simple comma and unfortunately we can't use
+# the cardinal symbol in this configuration file. 
+
+[tags]
+dtf = work,java,framework
+eclipse = java
+java = java
+guake = cli,linux
+chrome = web,browsing
+
+# Activities are identified by a keyword in the title of the application which
+# maps to the name of the activity to show in the hamster activity logs. The
+# keyword and activity name are managed by you as the end user.
+
+[activities]
+chrome = Browsing
+firefox = Browsing
+eclipse = Eclipse
+guake = CLI Fu
+terminal = CLI Fu
