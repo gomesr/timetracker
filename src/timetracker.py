@@ -13,6 +13,11 @@
 import configparser 
 import time
 import os.path
+import signal
+import getopt
+
+from os import fork, chdir, setsid, umask
+from sys import exit
 
 # adding the trackers folder to the imports path ;)
 import sys
@@ -84,7 +89,38 @@ def save_config():
     configfile = home + "/.timetracker.conf"
     config.write(open(configfile,"w"))
 
+def usage():
+    print("timetracker")
+   
+def main_loop():
+    while ( True ):
+        check_activity()
+        time.sleep(60) 
+        
 if __name__ == '__main__':
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],
+                                   "hds",
+                                   ["help", "daemon", "shutdown"])
+    except getopt.GetoptError as err:
+        print(str(err)) 
+        usage()
+        sys.exit(2)
+        
+    daemonize = False
+    shutdown = False
+    
+    for o, a in opts:
+        if o == "-d":
+            daemonize = True
+        elif o == "-s":
+            shutdown = True
+        elif o in ("-h", "--help"):
+            usage()
+            sys.exit()
+        else:
+            assert False, "unhandled option"
+            
     home = os.getenv("HOME")
     configfile = home + "/.timetracker.conf"
    
@@ -120,7 +156,60 @@ if __name__ == '__main__':
     # a little magical dynamic loading of modules
     exec("from %s import get_active_window_title" % wm)
     
-    while ( True ):
-        check_activity()
-        time.sleep(60)
+    out = config.get("main", "out.log")
+    err = config.get("main", "err.log")
+    
+    if ( config.has_option("main", "daemon.pid") ):
+        pid = int(config.get("main", "daemon.pid"))
+    else:
+        pid = None
+    
+    if ( shutdown and pid != None ):
+        try:
+            os.kill(pid, signal.SIGKILL)
+            print("killed daemon at pid %d" % pid)
+        except:
+            print("unable to kill proces %d" % pid)
+            
+        config.remove_option("main", "daemon.pid")
+        save_config()
+        exit()
+        
+    if ( pid != None ):
+        try:
+            os.kill(pid, 0)
+            print("already running, use -s option to shutdown previous instance")
+            exit(-1)
+        except OSError:
+            print("stale daemon pid entry in config")
+            config.remove_option("main", "daemon.pid")
+            save_config()
+    
+    if ( daemonize ):
+        try:
+            pid = fork()
+            if pid > 0:
+                exit(0)
+        except OSError as e:
+            exit(1)
+        
+        chdir("/")
+        setsid()
+        umask(0)
+        
+        try:
+            pid = fork()
+            if pid > 0:
+                print("daemon pid %d" % pid)
+                config.set("main", "daemon.pid", pid);
+                save_config()
+                exit(0)
+            out_log = open(out, 'a+')
+            err_log = open(err, 'a+')
+            os.dup2(out_log.fileno(), sys.stdout.fileno())
+            os.dup2(err_log.fileno(), sys.stderr.fileno())
+        except OSError as e:
+            exit(1)
+            
+    main_loop()
         

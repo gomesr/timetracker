@@ -6,6 +6,9 @@
 #tracker=libnotify:LibNotifyTracker
 tracker=hamster:HamsterTracker
 
+out.log=/var/log/timetracker.err.log
+err.log=/var/log/timetracker.out.log
+
 # Tags can be identified by keywords in the title of the application which will
 # then be attached to the activities description.
 # 
