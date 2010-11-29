@@ -7,6 +7,14 @@ desktop by recording the activities using the gnome time tracker applet (also
 known as the hamster project). It can be easily extended to work on other 
 desktop environments as well as other timetracking/notification systems.
 
+requirements
+------------
+  
+   * Python 3 (no particular reason other than not wanting to have to rewrite 
+               in the future when distros drop 2.x support)
+               
+   * hamster-applet latest build from master branch at http://projecthamster.wordpress.com/building-and-running/ 
+
 execution
 ---------
 
