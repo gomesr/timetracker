@@ -122,5 +122,5 @@ if __name__ == '__main__':
     
     while ( True ):
         check_activity()
-        time.sleep(10)
+        time.sleep(60)
         
