@@ -26,13 +26,9 @@ def execute(cmd, match_line = None):
         print("failed to execute %s, exited with %d" % (cmd, p.wait()))
         raise
     else:
-        if ( match_line == None ):
+        if ( match_line is None ):
             # return all lines
-            data = []
-            for line in stdout:
-                data.append(line)
-                
-            return '\n'.join(data)
+            return '\n'.join(stdout)
         else:
             for line in stdout:
                 if ( re.match(match_line, line) ):

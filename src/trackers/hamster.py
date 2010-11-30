@@ -32,14 +32,12 @@ class HamsterTracker(tracker.Tracker):
         
     def get_current_activity(self):
         cmd = [ hamster_cmd, "list" ]
-        data = process.execute(cmd).split("\n")
-       
-        if ( len(data) > 2 ): 
-            n = len(data)-1
-            if ( data[n] ):
-                return data[n].split("| ")[1]
-
-        return None
+        data = process.execute(cmd," \d\d\:\d\d - [ \t]+ \(.*");
+     
+        if ( data != None ):
+            return data.split("| ")[1]
+        
+        return data
 
 def to_activity_string(activity,category,description,tags):
     """

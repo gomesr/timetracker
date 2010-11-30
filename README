@@ -2,10 +2,17 @@ Timetracker
 -----------
 
 A simple python utility that can be used to track what you're doing on your
-computer at any moment. Was first written to track what I did on my gnome
-desktop by recording the activities using the gnome time tracker applet (also
-known as the hamster project). It can be easily extended to work on other 
-desktop environments as well as other timetracking/notification systems.
+computer at any moment. It can currrently track your activities based on rules
+that you have defined in your configuration file and uses the hamster time tracker
+tool to track your activity along with the description and tags associated with
+each activity. 
+
+Sometimes you may leave your desk to take care of something such as helping a
+colleague or attending a meeting and don't want timetracker to track the inactivity
+of your machine. In this situation you can manually set your activity with the 
+hamster-applet to whatever activity name you'd like and make sure to include the
+tag #ttstop to make sure that timetracker won't update your tracker until you've
+stopped this activity yourself.
 
 Requirements
 ------------

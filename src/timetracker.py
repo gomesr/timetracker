@@ -71,15 +71,19 @@ def check_activity():
         if ( activity != None ):
             aux = activity_tracker.get_current_activity()
             already_done = False
-            
-            if ( aux != None): 
+
+            if ( aux != None ):
+                if ( aux.find('#ttstop') != -1 ):
+                    print("timetracker can not touch [%s]" % aux)
+                    return
+                    
                 if ( activity in aux ):
                     print("tracked [%s,%s,{%s}]" % (activity,title,','.join(tags)))
                     already_done = True
                 else:
                     print("stopping current")
                     activity_tracker.stop()
-        
+                
             if ( not(already_done) ): 
                 print("starting [%s,%s,{%s}]" % (activity,title,','.join(tags)))
                 activity_tracker.start(activity, "", title, tags)
@@ -196,6 +200,7 @@ if __name__ == '__main__':
             os.kill(pid, signal.SIGKILL)
             print("killed daemon at pid %d" % pid)
             os.remove('/tmp/timetracker.pid')
+            exit()
         except:
             print("unable to kill proces %d" % pid)
             exit()

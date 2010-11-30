@@ -26,6 +26,9 @@ class Tracker(object):
         Return the currently running activity. If none is running or this 
         notifier doesn't have the capacity to track currently running activities
         then return None as well.
+        
+        If the current task has the tag #ttstop then the timetracker application
+        will not touch the currently running activity until it has been stopped
         """
         raise NotImplementedError( "Need to implement" )
 
