@@ -10,27 +10,34 @@
 import os
 from process import execute
 
-root_cmd = ["/usr/bin/xprop","-root"]
-active_window_match = ".*_NET_ACTIVE_WINDOW\(WINDOW\)\: window id #.*"
+xprop_cmd = "/usr/bin/xprop"
+qdbus_cmd = "/usr/bin/qdbus"
 
-window_cmd = ["xprop", "-id", ""]
+active_window_match = ".*_NET_ACTIVE_WINDOW\(WINDOW\)\: window id #.*"
 window_title_match = "^WM_ICON_NAME.*"
 
 def is_supported():
+    if ( not(os.path.exists(xprop_cmd)) ):
+        raise Exception("Couldn't find application [%s]" % xprop_cmd) 
+
+    if ( not(os.path.exists(qdbus_cmd)) ):
+        raise Exception("Couldn't find application [%s]" % qdbus_cmd) 
+    
     session = os.environ['DESKTOP_SESSION']
     return (session == 'gnome' or  session == 'kde')
 
 def get_active_window_title():
-    data = execute(root_cmd, active_window_match)
+    cmd = [ xprop_cmd, "-root" ]
+    data = execute(cmd, active_window_match)
     window_id = data[data.find('#')+1:].strip()
 
-    window_cmd[2] = window_id
-    data = execute(window_cmd, window_title_match)
+    cmd = [ xprop_cmd, "-id", window_id ]
+    data = execute(cmd, window_title_match)
     
     if ( data == None ):
         return None
     
-    title = data.split("= \"")[1][:-2]
+    title = data.split("= \"")[1][:-1]
     title = ''.join(filter(lambda x: not((x in range(128,256))), title))
                     
     return title
@@ -40,12 +47,12 @@ def is_desktop_active():
     
     if ( session == 'gnome' ):
         # /usr/bin/qdbus org.gnome.ScreenSaver / org.gnome.ScreenSaver.GetActive
-        cmd = [ "/usr/bin/qdbus",
+        cmd = [ qdbus_cmd,
                 "org.gnome.ScreenSaver",
                 "/",
                 "org.gnome.ScreenSaver.GetActive" ]
     elif ( session == 'kde' ):
-        cmd = [ "/usr/bin/qdbus",
+        cmd = [ qdbus_cmd,
                 "org.freedesktop.ScreenSaver",
                 "/ScreenSaver",
                 "org.freedesktop.ScreenSaver.GetActive" ]

@@ -24,6 +24,10 @@ libnotify_defaults = [ "-i",
     
 class LibNotifyTracker(tracker.Tracker):
     
+    def __init__(self):
+        if ( not(os.path.exists(libnotify_cmd)) ):
+            raise Exception("Couldn't find application [%s]" % libnotify_cmd) 
+    
     def start(self, name, category, description, tags = []):
         notify("TimeTracker", "Starting activity [%s]" % name)
     

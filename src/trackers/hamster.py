@@ -11,10 +11,15 @@
 '''
 import process
 import tracker
+import os
 
 hamster_cmd = "/usr/bin/hamster-cli"
     
 class HamsterTracker(tracker.Tracker):
+    
+    def __init__(self):
+        if ( not(os.path.exists(hamster_cmd)) ):
+            raise Exception("Couldn't find application [%s]" % hamster_cmd) 
     
     def start(self, name, category, description, tags = []):
         activity = to_activity_string(name, category, description, tags)
