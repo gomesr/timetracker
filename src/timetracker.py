@@ -122,7 +122,10 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hdcs",
-                                   ["help", "daemon", "create-config" "shutdown"])
+                                   ["help",
+                                    "daemon",
+                                    "create-config",
+                                    "shutdown"])
     except getopt.GetoptError as err:
         print(str(err)) 
         usage()
@@ -135,7 +138,7 @@ if __name__ == '__main__':
     for o, a in opts:
         if o == "-d":
             daemonize = True
-        if o == "-c":
+        elif o == "-c":
             createconfig = True
         elif o == "-s":
             shutdown = True
