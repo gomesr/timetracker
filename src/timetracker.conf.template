@@ -5,6 +5,7 @@
 # libnotify is used mainly for testing 
 #tracker=libnotify:LibNotifyTracker
 tracker=hamster:HamsterTracker
+update.interval=30
 
 out.log=/var/log/timetracker.err.log
 err.log=/var/log/timetracker.out.log

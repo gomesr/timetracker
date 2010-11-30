@@ -13,18 +13,57 @@ requirements
    * Python 3 (no particular reason other than not wanting to have to rewrite 
                in the future when distros drop 2.x support)
                
-   * hamster-applet latest build from master branch at http://projecthamster.wordpress.com/building-and-running/ 
+   * hamster-applet latest build from master branch at 
+     http://projecthamster.wordpress.com/building-and-running/ 
+
+installing hamster
+------------------
+
+   1. git clone git://git.gnome.org/hamster-applet
+   2. cd hamster-applet
+   3. ./waf configure build --prefix=/usr
+   4. sudo ./waf install
+
+supported environments
+----------------------
+
+Currently both KDE and Gnome desktops are supported but the tracking tool is the
+same hamster time tracking application. On Gnome you can add the hamster-applet
+to one of your panels but on KDE you'll have to startup the application 
+"/usr/lib/hamster-applet/hamster-applet -w" background and then you can put that
+window on your desktop and remove the borders and putting it in one of the 
+desktop corners so you can check on it. You don't need to have the applet 
+running for the timetracker to work correctly because it will still record
+all of your activites to the hamster-service and you can check your statistics
+by issuing "hamster-time-tracker" on the command line.
 
 execution
 ---------
 
 After checking out the tool it can easily be executed directly from the src 
 directory. Before you execute you should copy the template configuration file
-from timetracker.conf.template to ~/.timetracker.conf 
+from timetracker.conf.template to ~/.timetracker.conf. Then you can execute 
+and daemonize the timetracker utility by simply executing:
+
+timetracker.py -d
+
+A simple way to make sure your timertracker utility never stops running is to 
+use the ps-watcher application to monitor and make sure it is always running. 
+More information on the ps-watcher application can be found here:
+
+   * http://ps-watcher.sourceforge.net/
+   
+A sample configuration entry for the timetracker application would be:
+
+[timetracker]
+occurs = none
+action  = timetracker.py -d
 
 installation
 ------------
-* under construction * 
+
+Installing is currently done by just copy the src folder to a location of 
+your choice followed by making sure that directory is your PATH.
 
 configuring
 -----------

@@ -8,13 +8,19 @@ def execute(cmd, match_line = None):
     the first line in the is a good match and will be returned. In the case that
     you don't specify a match_line then all of the output will be returned.
     """
-    p = subprocess.Popen(cmd, stdin=None, stdout=subprocess.PIPE) 
+    p = subprocess.Popen(cmd,
+                         stdin=None,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE) 
+    stdout,stderr = p.communicate()
+   
+    # not very pretty but for now this will work 
+    stdout = str(stdout,'utf8').split('\n')
+    stderr = str(stderr,'utf8').split('\n')
        
     if p.wait() != 0:
-        _,stderr = p.communicate()
-       
         if ( stderr != None ): 
-            for line in stderr.readlines():
+            for line in stderr:
                 print(line)
                 
         print("failed to execute %s, exited with %d" % (cmd, p.wait()))
@@ -23,13 +29,12 @@ def execute(cmd, match_line = None):
         if ( match_line == None ):
             # return all lines
             data = []
-            for line in p.stdout.readlines():
-                data.append(str(line, 'utf8'))
+            for line in stdout:
+                data.append(line)
                 
             return '\n'.join(data)
         else:
-            for line in p.stdout.readlines():
-                line = str(line, 'utf8')
+            for line in stdout:
                 if ( re.match(match_line, line) ):
                     return line
             

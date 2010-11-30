@@ -25,19 +25,21 @@ libnotify_defaults = [ "-i",
 class LibNotifyTracker(tracker.Tracker):
     
     def start(self, name, category, description, tags = []):
-        cmd = [ libnotify_cmd ] 
-        for x in libnotify_defaults :
-            cmd.append(x)
-        cmd.append("Activity started: %s" % name)
-        cmd.append("%s" % description)
-        process.execute(cmd)
+        notify("TimeTracker", "Starting activity [%s]" % name)
     
     def stop(self):
-        cmd = [ libnotify_cmd, "" ]
-        for x in libnotify_defaults :
-            cmd.append(x)
-        cmd.append("stopping activity")
-        process.execute(cmd)
+        notify("TimeTracker","Stopping activity")
         
     def get_current_activity(self):
         return None
+
+def notify(title, message):
+    cmd = [ libnotify_cmd ]
+    
+    for x in libnotify_defaults :
+        cmd.append(x)
+    
+    cmd.append(title)
+    cmd.append(message)
+    
+    process.execute(cmd)

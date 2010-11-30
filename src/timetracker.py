@@ -13,16 +13,20 @@
 import configparser 
 import time
 import os.path
-import signal
 import getopt
+import signal
+import atexit
+import shutil
 
-from os import fork, chdir, setsid, umask
 from sys import exit
 
 # adding the trackers folder to the imports path ;)
 import sys
-sys.path.append('trackers')
-sys.path.append('windowmanagers')
+sys.path.append("%s/trackers" % sys.path[0])
+sys.path.append("%s/windowmanagers" % sys.path[0])
+
+import daemonizer
+import windowmanagers.wmfactory as wmfactory
 
 # globals
 global config
@@ -31,10 +35,21 @@ global tags_dict
 global activity_tracker
 
 # global active window title function
-global get_active_window_title
+global windowmanager 
+
+def on_shutdown():
+    print("Shutting down...")
+    activity_tracker.stop()
 
 def check_activity():
-    title = get_active_window_title() 
+    if ( not(windowmanager.is_desktop_active()) ):
+        print("desktop inactive...")
+        activity_tracker.stop()
+        
+        activity_tracker.start("Away","","Off to reality",[])
+        return
+    
+    title = windowmanager.get_active_window_title() 
     
     if ( title != None ):
         words = title.lower().split(' ') 
@@ -90,18 +105,24 @@ def save_config():
     config.write(open(configfile,"w"))
 
 def usage():
-    print("timetracker")
+    print("")
+    print("timertracker [-d] [-s] [-h]")
+    print("    -d - daemonize the timetracker utility")
+    print("    -s - shutdown a previously daemonized execution")
+    print("    -c - copy config template to ~/.timetracker.conf")
+    print("    -h - this menu")
    
 def main_loop():
     while ( True ):
         check_activity()
-        time.sleep(60) 
+        time.sleep(30) 
         
 if __name__ == '__main__':
+
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "hds",
-                                   ["help", "daemon", "shutdown"])
+                                   "hdcs",
+                                   ["help", "daemon", "create-config" "shutdown"])
     except getopt.GetoptError as err:
         print(str(err)) 
         usage()
@@ -109,10 +130,13 @@ if __name__ == '__main__':
         
     daemonize = False
     shutdown = False
+    createconfig = False
     
     for o, a in opts:
         if o == "-d":
             daemonize = True
+        if o == "-c":
+            createconfig = True
         elif o == "-s":
             shutdown = True
         elif o in ("-h", "--help"):
@@ -123,6 +147,9 @@ if __name__ == '__main__':
             
     home = os.getenv("HOME")
     configfile = home + "/.timetracker.conf"
+    
+    if ( createconfig ):
+        shutil.copy("%s/timetracker.conf.template" % sys.path[0], configfile)
    
     config = configparser.RawConfigParser()
     if ( os.path.exists(configfile) ):
@@ -133,7 +160,8 @@ if __name__ == '__main__':
         aitems = config.items('activities')
         activities_dict = dict([x for x in aitems])
     else:
-        print("no rules loaded...")
+        print("create a new timetracker config file with the -c option")
+        exit(2)
 
     # load tracker
     if ( config.has_option("main", "tracker") ):
@@ -147,20 +175,16 @@ if __name__ == '__main__':
     exec("activity_tracker = Tracker()")
     print("using %s tracker" % module)
     
-    # load window manager
-    if ( config.has_option("main", "windowmanager") ):
-        wm = config.get("main", "windowmanager")
+    if ( config.has_option("main", "update.interval") ):
+        tracker_sleep = config.get("main", "update.interval")
     else:
-        wm = "gnomewm"
-        
-    # a little magical dynamic loading of modules
-    exec("from %s import get_active_window_title" % wm)
+        tracker_sleep = 30 # default 30s
     
     out = config.get("main", "out.log")
     err = config.get("main", "err.log")
     
-    if ( config.has_option("main", "daemon.pid") ):
-        pid = int(config.get("main", "daemon.pid"))
+    if ( os.path.exists('/tmp/timetracker.pid') ):  
+        pid = int(open('/tmp/timetracker.pid', 'r').readlines()[0]) 
     else:
         pid = None
     
@@ -168,12 +192,10 @@ if __name__ == '__main__':
         try:
             os.kill(pid, signal.SIGKILL)
             print("killed daemon at pid %d" % pid)
+            os.remove('/tmp/timetracker.pid')
         except:
             print("unable to kill proces %d" % pid)
-            
-        config.remove_option("main", "daemon.pid")
-        save_config()
-        exit()
+            exit()
         
     if ( pid != None ):
         try:
@@ -182,34 +204,13 @@ if __name__ == '__main__':
             exit(-1)
         except OSError:
             print("stale daemon pid entry in config")
-            config.remove_option("main", "daemon.pid")
-            save_config()
+            os.remove('/tmp/timetracker.pid')
+
+    windowmanager = wmfactory.load_windowmanager()
     
     if ( daemonize ):
-        try:
-            pid = fork()
-            if pid > 0:
-                exit(0)
-        except OSError as e:
-            exit(1)
-        
-        chdir("/")
-        setsid()
-        umask(0)
-        
-        try:
-            pid = fork()
-            if pid > 0:
-                print("daemon pid %d" % pid)
-                config.set("main", "daemon.pid", pid);
-                save_config()
-                exit(0)
-            out_log = open(out, 'a+')
-            err_log = open(err, 'a+')
-            os.dup2(out_log.fileno(), sys.stdout.fileno())
-            os.dup2(err_log.fileno(), sys.stderr.fileno())
-        except OSError as e:
-            exit(1)
-            
+        daemonizer.start(main_loop, out, err, '/tmp/timetracker.pid')
+
+    atexit.register(on_shutdown)
     main_loop()
         
