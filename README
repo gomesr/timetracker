@@ -1,4 +1,4 @@
-timetracker
+Timetracker
 -----------
 
 A simple python utility that can be used to track what you're doing on your
@@ -7,24 +7,24 @@ desktop by recording the activities using the gnome time tracker applet (also
 known as the hamster project). It can be easily extended to work on other 
 desktop environments as well as other timetracking/notification systems.
 
-requirements
+Requirements
 ------------
   
    * Python 3 (no particular reason other than not wanting to have to rewrite 
                in the future when distros drop 2.x support)
                
    * hamster-applet latest build from master branch at 
+   
      http://projecthamster.wordpress.com/building-and-running/ 
 
-installing hamster
-------------------
+     Installing hamster:
+     
+        1. git clone git://git.gnome.org/hamster-applet
+        2. cd hamster-applet
+        3. ./waf configure build --prefix=/usr
+        4. sudo ./waf install
 
-   1. git clone git://git.gnome.org/hamster-applet
-   2. cd hamster-applet
-   3. ./waf configure build --prefix=/usr
-   4. sudo ./waf install
-
-supported environments
+Supported Environments
 ----------------------
 
 Currently both KDE and Gnome desktops are supported but the tracking tool is the
@@ -37,7 +37,13 @@ running for the timetracker to work correctly because it will still record
 all of your activites to the hamster-service and you can check your statistics
 by issuing "hamster-time-tracker" on the command line.
 
-execution
+Installation
+------------
+
+Installing is currently done by just copy the src folder to a location of 
+your choice followed by making sure that directory is your PATH.
+
+Execution
 ---------
 
 After checking out the tool it can easily be executed directly from the src 
@@ -59,27 +65,23 @@ A sample configuration entry for the timetracker application would be:
 occurs = none
 action  = timetracker.py -d
 
-installation
-------------
+Configuration
+-------------
 
-Installing is currently done by just copy the src folder to a location of 
-your choice followed by making sure that directory is your PATH.
+The configuration file for the timetracker utility is located at 
+~/.timetracker.conf and has a few different options that you can set. The first
+section is the "main" section which houses the configuration settings for the
+currently used tracker and update interval. It also houses the exact location of
+the output and error logs for timetracker. 
 
-configuring
------------
-* under construction * 
+The "tags" section is where you can associate keywords with the tags that should
+be recorded for that keyword. When you specify a keyword that word is compared 
+in lowercase to the window title in lowercase. 
 
-creating your own tracker
--------------------------
-* under construction * 
+The "activities" section also matches keywords in lower case but in this case
+its just choosing which activity name to associate with the currently focused
+window.
 
-notes
------
-
-I used two different approaches to making the tracker and window manager plug-in 
-architecture because I wanted to see an object oriented and non object oriented
-method but also because they have slightly different requirements. While the 
-tracker itself has a few more methods to implement and keep track of data. The
-window manager only has to return the title of the currently active window and 
-because of that just a simple required function to be created in the module is 
-enough.
+The main reason to compare keywords in lowercase is that its fast and cheap. We
+can easily support regular expressions in the future but for now this approach 
+works fine. 
