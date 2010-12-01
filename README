@@ -1,5 +1,5 @@
-Timetracker
------------
+Timetracker v0.1
+----------------
 
 A simple python utility that can be used to track what you're doing on your
 computer at any moment. It can currrently track your activities based on rules
@@ -12,7 +12,9 @@ colleague or attending a meeting and don't want timetracker to track the inactiv
 of your machine. In this situation you can manually set your activity with the 
 hamster-applet to whatever activity name you'd like and make sure to include the
 tag #ttstop to make sure that timetracker won't update your tracker until you've
-stopped this activity yourself.
+stopped this activity yourself. This means that even if your desktop becomes 
+inactive the tracker that is currently in use will continue to track that same
+manually inserted activity.
 
 Requirements
 ------------

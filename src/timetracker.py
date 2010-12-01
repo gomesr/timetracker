@@ -32,6 +32,7 @@ import windowmanagers.wmfactory as wmfactory
 global config
 global activities_dict
 global tags_dict
+global tracker_sleep
 global activity_tracker
 
 # global active window title function
@@ -41,16 +42,24 @@ def on_shutdown():
     print("Shutting down...")
     activity_tracker.stop()
 
+laststatus = { 'activity': '', 'title': '', 'tags': []} 
+    
 def check_activity():
+    global laststatus
+    
+    title = windowmanager.get_active_window_title() 
+    aux = activity_tracker.get_current_activity()
+        
+    if ( aux != None and aux.find('#ttstop') != -1 ):
+        print("timetracker can not touch [%s]" % aux)
+        return
+        
     if ( not(windowmanager.is_desktop_active()) ):
         print("desktop inactive...")
         activity_tracker.stop()
-        
         activity_tracker.start("Away","","Off to reality",[])
         return
-    
-    title = windowmanager.get_active_window_title() 
-    
+        
     if ( title != None ):
         words = title.lower().split(' ') 
         activity = None
@@ -59,7 +68,7 @@ def check_activity():
                 if ( key.lower() in word ):
                     activity = activities_dict[key]
                     break
-        
+            
         tags = []        
         for word in words:
             for key in tags_dict.keys():
@@ -67,26 +76,28 @@ def check_activity():
                     aux_tags = tags_dict[key]
                     for t in aux_tags.split(','):
                         tags.append(t)
-    
+        
         if ( activity != None ):
             aux = activity_tracker.get_current_activity()
             already_done = False
-
+    
             if ( aux != None ):
-                if ( aux.find('#ttstop') != -1 ):
-                    print("timetracker can not touch [%s]" % aux)
-                    return
-                    
-                if ( activity in aux ):
+                if ( title == laststatus['title'] ):
                     print("tracked [%s,%s,{%s}]" % (activity,title,','.join(tags)))
                     already_done = True
                 else:
-                    print("stopping current")
+                    print("stopping [%s,%s,{%s}]" % 
+                                    (laststatus['activity'],
+                                     laststatus['title'],
+                                     ','.join(laststatus['tags'])))
                     activity_tracker.stop()
-                
+                    
             if ( not(already_done) ): 
                 print("starting [%s,%s,{%s}]" % (activity,title,','.join(tags)))
                 activity_tracker.start(activity, "", title, tags)
+                laststatus = { "activity": activity,
+                               "title" : title,
+                               "tags": tags }
         else:
             print("unknown activity [%s]" % title)
     
@@ -119,10 +130,9 @@ def usage():
 def main_loop():
     while ( True ):
         check_activity()
-        time.sleep(30) 
+        time.sleep(tracker_sleep) 
         
 if __name__ == '__main__':
-
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hdcs",
@@ -175,15 +185,15 @@ if __name__ == '__main__':
         tracker_id = config.get("main", "tracker")
     else:
         tracker_id = "hamster:HamsterTracker"
-        
+   
     [module,cl] = tracker_id.split(':')
     # a little magical dynamic loading of modules
     exec("from %s import %s as Tracker" % (module,cl))
     exec("activity_tracker = Tracker()")
-    print("using %s tracker" % module)
+    print("loaded %s tracker" % module)
     
     if ( config.has_option("main", "update.interval") ):
-        tracker_sleep = config.get("main", "update.interval")
+        tracker_sleep = int(config.get("main", "update.interval"))
     else:
         tracker_sleep = 30 # default 30s
     
@@ -195,15 +205,19 @@ if __name__ == '__main__':
     else:
         pid = None
     
-    if ( shutdown and pid != None ):
-        try:
-            os.kill(pid, signal.SIGKILL)
-            print("killed daemon at pid %d" % pid)
-            os.remove('/tmp/timetracker.pid')
-            exit()
-        except:
-            print("unable to kill proces %d" % pid)
-            exit()
+    if ( shutdown ):
+        if ( pid != None ):
+            try:
+                os.kill(pid, signal.SIGKILL)
+                print("killed daemon at pid %d" % pid)
+                os.remove('/tmp/timetracker.pid')
+                exit()
+            except:
+                print("unable to kill proces %d" % pid)
+                exit()
+        else:
+            print("no tracker currently running.")
+            exit(-1)
         
     if ( pid != None ):
         try:
