@@ -30,12 +30,13 @@ def start(main_method, stdout, stderr, pidfile='/tmp/daemonize.pid'):
             exit(0)
       
         lfile = open(pidfile,'w')
-        fcntl.lockf(lfile, fcntl.LOCK_EX|fcntl.LOCK_NB)
+        fcntl.lockf(lfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
         lfile.write('%s' %(os.getpid()))
         lfile.flush()
         
         out_log = open(stdout, 'a+')
         err_log = open(stderr, 'a+')
+
         os.dup2(out_log.fileno(), sys.stdout.fileno())
         os.dup2(err_log.fileno(), sys.stderr.fileno())
         

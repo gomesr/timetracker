@@ -5,8 +5,6 @@
 @summary: A window manager that defines the desktop functions that are required
           by timetracker to track what the user is doing at any given moment.
           
-          * is_supported 
-          
           * get_active_window_title
             This function should return the complete title of the application
             that is currently active (or in other words has the users focus) on 
@@ -20,9 +18,6 @@
             doing anything.
           
 '''
-
-def is_supported():
-    raise NotImplemented("Implement this function for your own window manager")
 
 def get_active_window_title():
     raise NotImplemented("Implement this function for your own window manager")

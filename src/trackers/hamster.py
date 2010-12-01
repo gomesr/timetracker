@@ -27,8 +27,10 @@ class HamsterTracker(tracker.Tracker):
         id = process.execute(cmd)
     
     def stop(self):
-        cmd = [ hamster_cmd, "stop" ]
-        id = process.execute(cmd)
+        # hamster-applet does'nt require that you stop the previous activity.
+        # By not calling the stop you don't have any strange flickering of the 
+        # hamster-applet on the gnome-panel
+        id(None)
         
     def get_current_activity(self):
         cmd = [ hamster_cmd, "list" ]

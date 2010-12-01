@@ -207,14 +207,10 @@ if __name__ == '__main__':
     
     if ( shutdown ):
         if ( pid != None ):
-            try:
-                os.kill(pid, signal.SIGKILL)
-                print("killed daemon at pid %d" % pid)
-                os.remove('/tmp/timetracker.pid')
-                exit()
-            except:
-                print("unable to kill proces %d" % pid)
-                exit()
+            os.kill(pid, signal.SIGKILL)
+            print("killed daemon at pid %d" % pid)
+            os.remove('/tmp/timetracker.pid')
+            exit()
         else:
             print("no tracker currently running.")
             exit(-1)
