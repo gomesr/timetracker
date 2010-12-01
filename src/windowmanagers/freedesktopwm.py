@@ -14,7 +14,8 @@ xprop_cmd = "/usr/bin/xprop"
 qdbus_cmd = "/usr/bin/qdbus"
 
 active_window_match = ".*_NET_ACTIVE_WINDOW\(WINDOW\)\: window id #.*"
-window_title_match = "^WM_ICON_NAME.*"
+window_title_match = "^WM_NAME\(STRING\).*"
+window_title_match_ct = "^WM_NAME\(COMPOUND_TEXT\).*"
 window_class_match = "^WM_CLASS.*"
 
 def is_supported():
@@ -31,12 +32,12 @@ def get_active_window_title():
     cmd = [ xprop_cmd, "-root" ]
     data = execute(cmd, active_window_match)
     window_id = data[data.find('#')+1:].strip()
-
+    
     cmd = [ xprop_cmd, "-id", window_id ]
     title_data = execute(cmd, window_title_match)
     class_data = execute(cmd, window_class_match)
-    
-    if ( title_data == None and class_data == None ):
+    title_data_ct = execute(cmd, window_title_match_ct)
+    if ( title_data == None and class_data == None and title_data_ct == None):
         return None
     
     buffer = []
@@ -50,7 +51,18 @@ def get_active_window_title():
             aux = aux.replace("\"","")
             
         buffer.append(aux) 
-
+        
+    if ( title_data_ct != None ):
+        if ( class_data != None ):
+            buffer.append(" - ")
+            
+        aux = title_data_ct.split("= \"")
+        
+        if ( len(aux) == 2 ):
+            aux = aux[1][:-1]
+            aux = ''.join(filter(lambda x: not((x in range(128,256))), aux))
+        buffer.append(aux)
+        
     if ( title_data != None ):
         if ( class_data != None ):
             buffer.append(" - ")
