@@ -2,7 +2,8 @@
 @author: Rodney Gomes 
 @contact: rodneygomes@gmail.com 
 
-@summary: 
+@summary: This tracker is used for testing and basically logs each of the 
+          start/stops of activites to a log file
 '''
 import tracker
 import time

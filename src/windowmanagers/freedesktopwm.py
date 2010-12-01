@@ -16,6 +16,16 @@ qdbus_cmd = "/usr/bin/qdbus"
 active_window_match = ".*_NET_ACTIVE_WINDOW\(WINDOW\)\: window id #.*"
 window_title_match = "^WM_ICON_NAME.*"
 
+def is_supported():
+    if ( not(os.path.exists(xprop_cmd)) ):
+        raise Exception("Couldn't find application [%s]" % xprop_cmd) 
+
+    if ( not(os.path.exists(qdbus_cmd)) ):
+        raise Exception("Couldn't find application [%s]" % qdbus_cmd) 
+    
+    session = os.environ['DESKTOP_SESSION']
+    return (session == 'gnome' or  session == 'kde')
+
 def get_active_window_title():
     cmd = [ xprop_cmd, "-root" ]
     data = execute(cmd, active_window_match)
