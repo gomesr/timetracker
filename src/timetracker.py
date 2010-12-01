@@ -81,6 +81,8 @@ def check_activity():
                     aux_tags = tags_dict[key]
                     for t in aux_tags.split(','):
                         tags.append(t)
+       
+        tags = set(tags)
         
         if ( activity != None ):
             aux = activity_tracker.get_current_activity()
