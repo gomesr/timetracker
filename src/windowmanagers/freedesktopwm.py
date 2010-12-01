@@ -15,6 +15,7 @@ qdbus_cmd = "/usr/bin/qdbus"
 
 active_window_match = ".*_NET_ACTIVE_WINDOW\(WINDOW\)\: window id #.*"
 window_title_match = "^WM_ICON_NAME.*"
+window_class_match = "^WM_CLASS.*"
 
 def is_supported():
     if ( not(os.path.exists(xprop_cmd)) ):
@@ -32,15 +33,37 @@ def get_active_window_title():
     window_id = data[data.find('#')+1:].strip()
 
     cmd = [ xprop_cmd, "-id", window_id ]
-    data = execute(cmd, window_title_match)
+    title_data = execute(cmd, window_title_match)
+    class_data = execute(cmd, window_class_match)
     
-    if ( data == None ):
+    if ( title_data == None and class_data == None ):
         return None
     
-    title = data.split("= \"")[1][:-1]
-    title = ''.join(filter(lambda x: not((x in range(128,256))), title))
-                    
-    return title
+    buffer = []
+    
+    if ( class_data != None ):
+        aux = class_data.split("= \"")
+        
+        if ( len(aux) == 2 ):
+            aux = aux[1]
+            aux = ''.join(filter(lambda x: not((x in range(128,256))), aux))
+            aux = aux.replace("\"","")
+            
+        buffer.append(aux) 
+
+    if ( title_data != None ):
+        if ( class_data != None ):
+            buffer.append(" - ")
+            
+        aux = title_data.split("= \"")
+        
+        if ( len(aux) == 2 ):
+            aux = aux[1][:-1]
+            aux = ''.join(filter(lambda x: not((x in range(128,256))), aux))
+            
+        buffer.append(aux) 
+        
+    return ''.join(buffer)
 
 def is_desktop_active():
     session = os.environ['DESKTOP_SESSION']

@@ -63,14 +63,19 @@ def check_activity():
     if ( title != None ):
         words = title.lower().split(' ') 
         activity = None
-        for word in words:
-            for key in activities_dict.keys():
-                if ( key.lower() in word ):
-                    activity = activities_dict[key]
-                    break
-            
         tags = []        
+        
         for word in words:
+            # once the first activity is found that is the one that represents
+            # this task
+            if ( activity == None ):
+                for key in activities_dict.keys():
+                    if ( key.lower() in word ):
+                        activity = activities_dict[key]
+                        break
+           
+            # there is no restrictions in the number of tags you can add to 
+            # any activity 
             for key in tags_dict.keys():
                 if ( key.lower() in word ):
                     aux_tags = tags_dict[key]
@@ -160,7 +165,7 @@ if __name__ == '__main__':
             usage()
             sys.exit()
         else:
-            assert False, "unhandled option"
+            assert False, "option not handled"
             
     home = os.getenv("HOME")
     configfile = home + "/.timetracker.conf"
