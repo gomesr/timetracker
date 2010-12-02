@@ -37,5 +37,8 @@ class XServerMonitor(Thread):
                     self.current = id
                 
             line = str(stdout.readline(),'utf8')
+        
+        if ( windowmonitor != None ):
+            windowmonitor.cancel()
             
         process.terminate()

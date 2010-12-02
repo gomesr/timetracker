@@ -39,7 +39,6 @@ global activity_tracker
 global windowmanager 
 
 def on_shutdown():
-    print("Shutting down...")
     activity_tracker.stop()
     windowmanager.stop()
 
@@ -135,9 +134,17 @@ def usage():
     print("    -h - this menu")
    
 def main_loop():
-    while ( True ):
-        print("just looping...")
-        time.sleep(1000) 
+    global windowmanager 
+    
+    windowmanager = wmfactory.load_windowmanager()
+    windowmanager.start(window_changed)
+    
+    try:
+        while ( True ):
+            print("just looping...")
+            time.sleep(1000) 
+    except: 
+        on_shutdown()
         
 if __name__ == '__main__':
     try:
@@ -231,9 +238,6 @@ if __name__ == '__main__':
             print("stale daemon pid entry in config")
             os.remove('/tmp/timetracker.pid')
 
-    windowmanager = wmfactory.load_windowmanager()
-    windowmanager.start(window_changed)
-    
     if ( daemonize ):
         daemonizer.start(main_loop, out, err, '/tmp/timetracker.pid')
 

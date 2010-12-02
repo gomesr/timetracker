@@ -13,6 +13,12 @@ class XWindowMonitor(Thread):
         self.done = False
         self.current = None
         self.callback = callback
+       
+        class_cmd = [ "/usr/bin/xprop", "-id" , id, "WM_CLASS" ]
+        process = subprocess.Popen(class_cmd, stdout = subprocess.PIPE)
+        
+        line = str(process.stdout.readline(),'utf8')
+        self.class_name = line.replace("WM_CLASS(STRING) = ","").replace("\n","") 
     
     def cancel(self):
         self.done = True
@@ -34,7 +40,7 @@ class XWindowMonitor(Thread):
                 title = title.replace("\n","")
                
             if ( title != None and title != self.current ): 
-                self.callback(title)
+                self.callback("%s - %s" % (self.class_name, title))
                 self.current = title
                 
             line = str(stdout.readline(),'utf8')
