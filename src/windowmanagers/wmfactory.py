@@ -7,12 +7,12 @@
           environment is not supported.
 '''
 
-import freedesktopwm
+from freedesktopwm import FreedesktopManager 
 
 def load_windowmanager():
     
-    if ( freedesktopwm.is_supported() ):
-        return freedesktopwm
+    if ( FreedesktopManager.is_supported() ):
+        return FreedesktopManager()
     else:
         raise 
         

@@ -41,13 +41,13 @@ global windowmanager
 def on_shutdown():
     print("Shutting down...")
     activity_tracker.stop()
+    windowmanager.stop()
 
 laststatus = { 'activity': '', 'title': '', 'tags': []} 
     
-def check_activity():
+def window_changed(title):
     global laststatus
     
-    title = windowmanager.get_active_window_title() 
     aux = activity_tracker.get_current_activity()
         
     if ( aux != None and aux.find('#ttstop') != -1 ):
@@ -136,8 +136,8 @@ def usage():
    
 def main_loop():
     while ( True ):
-        check_activity()
-        time.sleep(tracker_sleep) 
+        print("just looping...")
+        time.sleep(1000) 
         
 if __name__ == '__main__':
     try:
@@ -232,6 +232,7 @@ if __name__ == '__main__':
             os.remove('/tmp/timetracker.pid')
 
     windowmanager = wmfactory.load_windowmanager()
+    windowmanager.start(window_changed)
     
     if ( daemonize ):
         daemonizer.start(main_loop, out, err, '/tmp/timetracker.pid')
