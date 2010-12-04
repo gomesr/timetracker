@@ -14,6 +14,9 @@ class WindowManager(Thread):
     
     def stop(self): 
         raise NotImplemented("implement this function")
+    
+    def message(self,title,message):
+        raise NotImplemented("implement this function")
 
     def is_desktop_active():
         raise NotImplemented("implement this function")

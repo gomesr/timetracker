@@ -21,7 +21,7 @@ class XServerMonitor(Thread):
         stdout = process.stdout
         
         windowmonitor = None
-        line = str(stdout.readline(),'utf8');
+        line = str(stdout.readline());
         while ( line != None and not(self.done) ):
             if ( line.find(ACTIVE_WINDOW) != -1 ):
                 id = line.replace(ACTIVE_WINDOW,"")
@@ -36,7 +36,7 @@ class XServerMonitor(Thread):
                     
                     self.current = id
                 
-            line = str(stdout.readline(),'utf8')
+            line = str(stdout.readline())
         
         if ( windowmonitor != None ):
             windowmonitor.cancel()

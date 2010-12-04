@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 '''
 @author: Rodney Gomes 
 @contact: rodneygomes@gmail.com 
@@ -10,7 +10,8 @@
           information this tool then instructs the hamster-applet using the 
           hamster-cli to start/stop activites.
 '''
-import configparser 
+
+import ConfigParser
 import time
 import os.path
 import getopt
@@ -46,9 +47,10 @@ laststatus = { 'activity': '', 'title': '', 'tags': []}
     
 def window_changed(title):
     global laststatus
-    
+
+    title = title.replace("#","")
     aux = activity_tracker.get_current_activity()
-        
+    
     if ( aux != None and aux.find('#ttstop') != -1 ):
         print("timetracker can not touch [%s]" % aux)
         return
@@ -63,24 +65,26 @@ def window_changed(title):
         words = title.lower().split(' ') 
         activity = None
         tags = []        
-        
+       
+        activites_dict_keys = activities_dict.keys()
+        tags_dict_keys =  tags_dict.keys()
+      
         for word in words:
             # once the first activity is found that is the one that represents
             # this task
             if ( activity == None ):
-                for key in activities_dict.keys():
-                    if ( key.lower() in word ):
+                for key in activites_dict_keys:
+                    if ( key in word ):
                         activity = activities_dict[key]
                         break
-           
+          
             # there is no restrictions in the number of tags you can add to 
-            # any activity 
-            for key in tags_dict.keys():
-                if ( key.lower() in word ):
+            # any ActivityLogTracker 
+            for key in tags_dict_keys:
+                if ( key in word ):
                     aux_tags = tags_dict[key]
                     for t in aux_tags.split(','):
                         tags.append(t)
-       
         tags = set(tags)
         
         if ( activity != None ):
@@ -142,7 +146,7 @@ def main_loop():
     try:
         while ( True ):
             print("just looping...")
-            time.sleep(1000) 
+            time.sleep(5000) 
     except: 
         on_shutdown()
         
@@ -182,14 +186,15 @@ if __name__ == '__main__':
     if ( createconfig ):
         shutil.copy("%s/timetracker.conf.template" % sys.path[0], configfile)
    
-    config = configparser.RawConfigParser()
+    config = ConfigParser.RawConfigParser()
+    lower = str.lower
     if ( os.path.exists(configfile) ):
         config.read(configfile)
         titems = config.items('tags')
-        tags_dict = dict([x for x in titems])
+        tags_dict = dict([(lower(x),y) for (x,y) in titems])
         
         aitems = config.items('activities')
-        activities_dict = dict([x for x in aitems])
+        activities_dict = dict([(lower(x),y) for (x,y) in aitems])
     else:
         print("create a new timetracker config file with the -c option")
         exit(2)
@@ -201,6 +206,7 @@ if __name__ == '__main__':
         tracker_id = "hamster:HamsterTracker"
    
     [module,cl] = tracker_id.split(':')
+    
     # a little magical dynamic loading of modules
     exec("from %s import %s as Tracker" % (module,cl))
     exec("activity_tracker = Tracker()")

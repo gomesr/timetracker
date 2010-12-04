@@ -15,8 +15,8 @@ def execute(cmd, match_line = None):
     stdout,stderr = p.communicate()
    
     # not very pretty but for now this will work 
-    stdout = str(stdout,'utf8').split('\n')
-    stderr = str(stderr,'utf8').split('\n')
+    stdout = stdout.split('\n')
+    stderr = stderr.split('\n')
        
     if p.wait() != 0:
         if ( stderr != None ): 

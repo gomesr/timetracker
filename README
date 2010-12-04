@@ -19,9 +19,8 @@ manually inserted activity.
 Requirements
 ------------
   
-   * Python 3 (no particular reason other than not wanting to have to rewrite 
-               in the future when distros drop 2.x support)
-               
+   * Python 2.6+ 
+   
    * hamster-applet latest build from master branch at 
    
      http://projecthamster.wordpress.com/building-and-running/ 

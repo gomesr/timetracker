@@ -2,9 +2,7 @@
 # main configuration section contains important values for timetracker 
 # configuration
 [main]
-# libnotify is used mainly for testing 
-#tracker=libnotify:LibNotifyTracker
-tracker=hamster:HamsterTracker
+tracker=hammy:HamsterTracker
 update.interval=30
 
 out.log=/var/log/timetracker.out.log

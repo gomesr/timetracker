@@ -17,7 +17,7 @@ class XWindowMonitor(Thread):
         class_cmd = [ "/usr/bin/xprop", "-id" , id, "WM_CLASS" ]
         process = subprocess.Popen(class_cmd, stdout = subprocess.PIPE)
         
-        line = str(process.stdout.readline(),'utf8')
+        line = str(process.stdout.readline())
         self.class_name = line.replace("WM_CLASS(STRING) = ","").replace("\n","") 
     
     def cancel(self):
@@ -27,7 +27,7 @@ class XWindowMonitor(Thread):
         process = subprocess.Popen(self.cmd, stdout = subprocess.PIPE)
         stdout = process.stdout
        
-        line = str(stdout.readline(),'utf8');
+        line = str(stdout.readline());
         while ( line != None and not(self.done) ):
             title = None
             
@@ -43,6 +43,6 @@ class XWindowMonitor(Thread):
                 self.callback("%s - %s" % (self.class_name, title))
                 self.current = title
                 
-            line = str(stdout.readline(),'utf8')
+            line = str(stdout.readline())
             
         process.terminate()
