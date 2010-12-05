@@ -20,6 +20,8 @@ Requirements
 ------------
   
    * Python 2.6+ 
+     
+     On Ubuntu: apt-get install python2.6 python-configobj 
    
    * hamster-applet latest build from master branch at 
    
