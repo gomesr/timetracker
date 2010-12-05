@@ -12,8 +12,22 @@ from windowmanager import WindowManager
 from xservermonitor import XServerMonitor
 
 from process import execute
-
 import os
+
+global DESKTOP_CMD 
+
+session = os.environ['DESKTOP_SESSION']
+if ( session == 'gnome' ):
+    # /usr/bin/qdbus org.gnome.ScreenSaver / org.gnome.ScreenSaver.GetActive
+    DESKTOP_CMD = [ "/usr/bin/qdbus",
+                    "org.gnome.ScreenSaver",
+                    "/",
+                    "org.gnome.ScreenSaver.GetActive" ]
+elif ( session == 'kde' ):
+    DESKTOP_CMD = [ "/usr/bin/qdbus",
+                    "org.freedesktop.ScreenSaver",
+                    "/ScreenSaver",
+                    "org.freedesktop.ScreenSaver.GetActive" ]
 
 class FreedesktopManager(WindowManager):
     
@@ -29,21 +43,7 @@ class FreedesktopManager(WindowManager):
         return (session == 'gnome' or  session == 'kde')
 
     def is_desktop_active():
-        session = os.environ['DESKTOP_SESSION']
-        
-        if ( session == 'gnome' ):
-            # /usr/bin/qdbus org.gnome.ScreenSaver / org.gnome.ScreenSaver.GetActive
-            cmd = [ "/usr/bin/qdbus",
-                    "org.gnome.ScreenSaver",
-                    "/",
-                    "org.gnome.ScreenSaver.GetActive" ]
-        elif ( session == 'kde' ):
-            cmd = [ "/usr/bin/qdbus",
-                    "org.freedesktop.ScreenSaver",
-                    "/ScreenSaver",
-                    "org.freedesktop.ScreenSaver.GetActive" ]
-        
-        data = execute(cmd)
+        data = execute(DESKTOP_CMD)
         return "false" in data
 
     is_desktop_active = staticmethod(is_desktop_active)

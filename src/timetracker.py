@@ -55,11 +55,7 @@ def window_changed(title):
         print("timetracker can not touch [%s]" % aux)
         return
         
-    if ( not(windowmanager.is_desktop_active()) ):
-        print("desktop inactive...")
-        activity_tracker.stop()
-        activity_tracker.start("Away","","Off to reality",[])
-        return
+
         
     if ( title != None ):
         words = title.lower().split(' ') 
@@ -145,8 +141,23 @@ def main_loop():
     
     try:
         while ( True ):
-            print("just looping...")
-            time.sleep(5000) 
+            time.sleep(1)
+            isactive = windowmanager.is_desktop_active()
+            current = activity_tracker.get_current_activity()
+            
+            if ( not(isactive) and current != "away" ):
+                activity_tracker.stop()
+                activity_tracker.start("away","","off to reality",[])
+           
+            if ( isactive and current == "away" ):
+                '''
+                return to the previous task but make sure to wipe out the last 
+                status so that the tool cn continue to track correctly
+                '''
+                title = laststatus['title']
+                laststatus['title'] = None 
+                window_changed(title)
+                
     except: 
         on_shutdown()
         
