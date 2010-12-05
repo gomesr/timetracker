@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 @author: Rodney Gomes 
 @contact: rodneygomes@gmail.com 
@@ -219,7 +219,7 @@ if __name__ == '__main__':
     [module,cl] = tracker_id.split(':')
     
     # a little magical dynamic loading of modules
-    exec("from %s import %s as Tracker" % (module,cl))
+    exec("from trackers.%s import %s as Tracker" % (module,cl))
     exec("activity_tracker = Tracker()")
     print("loaded %s tracker" % module)
     
@@ -232,11 +232,13 @@ if __name__ == '__main__':
     err = config.get("main", "err.log")
     pidfile = "/tmp/timetracker.pid"
     
-    if ( not(os.access(out, os.W_OK)) ):
-        raise EnvironmentError("Unable to write to [%s]" % out)
+    if ( os.path.exists(out) ):
+        if ( not(os.access(out, os.W_OK)) ):
+            raise EnvironmentError("Unable to write to [%s]" % out)
 
-    if ( not(os.access(err, os.W_OK)) ):
-        raise EnvironmentError("Unable to write to [%s]" % err)
+    if ( os.path.exists(err) ):
+        if ( not(os.access(err, os.W_OK)) ):
+            raise EnvironmentError("Unable to write to [%s]" % err)
 
     if ( os.path.exists(pidfile) ):
         if ( not(os.access(pidfile, os.W_OK)) ):
