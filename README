@@ -50,8 +50,12 @@ by issuing "hamster-time-tracker" on the command line.
 Installation
 ------------
 
-Installing is currently done by just copy the src folder to a location of 
-your choice followed by making sure that directory is your PATH.
+   1. ./waf configure
+   1. ./waf build 
+   1. sudo ./waf install
+   
+You'll now have timetracker installed correctly on your system and you should 
+be able to execute the command "timetracker" on your command line.
 
 Execution
 ---------

@@ -195,7 +195,9 @@ if __name__ == '__main__':
     configfile = home + "/.timetracker.conf"
     
     if ( createconfig ):
+        print("Copied default configuration file into place.")
         shutil.copy("%s/timetracker.conf.template" % sys.path[0], configfile)
+        sys.exit(0)
    
     config = ConfigParser.RawConfigParser()
     lower = str.lower
