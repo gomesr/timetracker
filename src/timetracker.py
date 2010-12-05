@@ -230,9 +230,23 @@ if __name__ == '__main__':
     
     out = config.get("main", "out.log")
     err = config.get("main", "err.log")
+    pidfile = "/tmp/timetracker.pid"
     
-    if ( os.path.exists('/tmp/timetracker.pid') ):  
-        pid = int(open('/tmp/timetracker.pid', 'r').readlines()[0]) 
+    if ( not(os.access(out, os.W_OK)) ):
+        raise EnvironmentError("Unable to write to [%s]" % out)
+
+    if ( not(os.access(err, os.W_OK)) ):
+        raise EnvironmentError("Unable to write to [%s]" % err)
+
+    if ( os.path.exists(pidfile) ):
+        if ( not(os.access(pidfile, os.W_OK)) ):
+            raise EnvironmentError("Unable to write to [%s]" % pidfile)
+    
+        if ( not(os.access(pidfile, os.R_OK)) ):
+            raise EnvironmentError("Unable to read from [%s]" % pidfile)
+    
+    if ( os.path.exists(pidfile) ):  
+        pid = int(open(pidfile, 'r').readlines()[0]) 
     else:
         pid = None
     
@@ -240,7 +254,7 @@ if __name__ == '__main__':
         if ( pid != None ):
             os.kill(pid, signal.SIGKILL)
             print("killed daemon at pid %d" % pid)
-            os.remove('/tmp/timetracker.pid')
+            os.remove(pidfile)
             exit()
         else:
             print("no tracker currently running.")
@@ -253,10 +267,10 @@ if __name__ == '__main__':
             exit(-1)
         except OSError:
             print("stale daemon pid entry in config")
-            os.remove('/tmp/timetracker.pid')
+            os.remove(pidfile)
 
     if ( daemonize ):
-        daemonizer.start(main_loop, out, err, '/tmp/timetracker.pid')
+        daemonizer.start(main_loop, out, err, pidfile)
 
     atexit.register(on_shutdown)
     main_loop()
