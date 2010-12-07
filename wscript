@@ -50,4 +50,25 @@ def build(ctx):
 def dist(ctx):
     ctx.algo      = 'tar.gz' 
     ctx.excl      = ' **/.waf-1* **/*~ **/*.pyc **/*.swp **/.lock-w*' 
-    ctx.files     = ctx.path.ant_glob('src/**') 
+    ctx.files     = ctx.path.ant_glob('src/**')
+
+def test(ctx): 
+    '''
+    A test runner that will load all of the python modules that end with the 
+    keyword test from the src/tests directory and run them through the pyunit 
+    framework.
+    '''
+    import os
+    import unittest
+    import sys
+    sys.path.append("src")
+    sys.path.append("tests")
+    files = os.listdir("tests") 
+  
+    suite = None 
+    for file in files:
+        if ( str(file).endswith("test.py") ):
+            module = str(file).replace(".py", "")
+            exec("import %s" % module)
+            suite = unittest.TestLoader().loadTestsFromName(module)
+            unittest.TextTestRunner(verbosity=2).run(suite)

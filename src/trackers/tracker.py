@@ -20,6 +20,13 @@ class Tracker(object):
         return.
         """
         raise NotImplementedError( "Need to implement" )
+
+    def destroy(self):
+        """
+        With the destroyer you can do any necessary clean up before the 
+        application exits
+        """
+        raise NotImplementedError( "Need to implement" )
     
     def get_current_activity(self):
         """

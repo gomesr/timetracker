@@ -38,6 +38,9 @@ class LibNotifyTracker(tracker.Tracker):
         notify("TimeTracker","Stopping activity")
         self.name = None
         
+    def destroy(self):
+        self.name = None
+        
     def get_current_activity(self):
         return self.name
 

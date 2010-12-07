@@ -11,7 +11,6 @@
           hamster-cli to start/stop activites.
 '''
 
-import ConfigParser
 import time
 import os.path
 import getopt
@@ -28,9 +27,9 @@ sys.path.append("%s/windowmanagers" % sys.path[0])
 
 import daemonizer
 import windowmanagers.wmfactory as wmfactory
+import configuration
 
 # globals
-global config
 global activities_dict
 global tags_dict
 global tracker_sleep
@@ -38,14 +37,17 @@ global activity_tracker
 
 # global active window title function
 global windowmanager 
-
-def on_shutdown():
-    activity_tracker.stop()
-    windowmanager.stop()
+global laststatus
 
 laststatus = { 'activity': '', 'title': '', 'tags': []} 
-    
+
+def on_shutdown():
+    windowmanager.stop()
+    activity_tracker.destroy()
+
 def window_changed(title):
+    global activities_dict
+    global tags_dict
     global laststatus
 
     title = title.replace("#","")
@@ -54,8 +56,6 @@ def window_changed(title):
     if ( aux != None and aux.find('#ttstop') != -1 ):
         print("timetracker can not touch [%s]" % aux)
         return
-        
-
         
     if ( title != None ):
         words = title.lower().split(' ') 
@@ -106,35 +106,29 @@ def window_changed(title):
                                "tags": tags }
         else:
             print("unknown activity [%s]" % title)
-    
-def get_config():
-    """
-    Get the currently loaded configuration file from the main timetracker 
-    application. Any values set on this config will be saved once you call the
-    save_config file.
-    """
-    return config
 
-def save_config():
-    """
-    This function is used to save the application configuration whenever you 
-    make any changes to the current configuration that you can obtain using the
-    get_config function.
-    """
-    home = os.getenv("HOME")
-    configfile = home + "/.timetracker.conf"
-    config.write(open(configfile,"w"))
+def load_defaults(config):  
+    global activities_dict
+    global tags_dict
+    
+    titems = config.items('tags')
+    tags_dict = dict([(str.lower(x),y) for (x,y) in titems])
+        
+    aitems = config.items('activities')
+    activities_dict = dict([(str.lower(x),y) for (x,y) in aitems])
 
 def usage():
     print("")
-    print("timertracker [-d] [-s] [-h]")
+    print("timertracker [-d] [-s] [-h] [-c] [-l configfile]")
     print("    -d - daemonize the timetracker utility")
     print("    -s - shutdown a previously daemonized execution")
     print("    -c - copy config template to ~/.timetracker.conf")
+    print("    -l - load this configfile instead")
     print("    -h - this menu")
-   
+ 
 def main_loop():
     global windowmanager 
+    atexit.register(on_shutdown)
     
     windowmanager = wmfactory.load_windowmanager()
     windowmanager.start(window_changed)
@@ -164,10 +158,11 @@ def main_loop():
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "hdcs",
+                                   "hdcls",
                                    ["help",
                                     "daemon",
                                     "create-config",
+                                    "load=",
                                     "shutdown"])
     except getopt.GetoptError as err:
         print(str(err)) 
@@ -177,12 +172,15 @@ if __name__ == '__main__':
     daemonize = False
     shutdown = False
     createconfig = False
+    loadconfig = None
     
     for o, a in opts:
         if o == "-d":
             daemonize = True
         elif o == "-c":
             createconfig = True
+        elif o in ( "-l","--load" ):
+            loadconfig = a
         elif o == "-s":
             shutdown = True
         elif o in ("-h", "--help"):
@@ -198,16 +196,15 @@ if __name__ == '__main__':
         print("Copied default configuration file into place.")
         shutil.copy("%s/timetracker.conf.template" % sys.path[0], configfile)
         sys.exit(0)
+    
+    if ( loadconfig != None ):
+        print("loading %s configuration file" % loadconfig)
+        configfile = loadconfig
    
-    config = ConfigParser.RawConfigParser()
-    lower = str.lower
     if ( os.path.exists(configfile) ):
-        config.read(configfile)
-        titems = config.items('tags')
-        tags_dict = dict([(lower(x),y) for (x,y) in titems])
-        
-        aitems = config.items('activities')
-        activities_dict = dict([(lower(x),y) for (x,y) in aitems])
+        configuration.load_config(configfile)
+        config = configuration.get_config()
+        load_defaults(config)
     else:
         print("create a new timetracker config file with the -c option")
         exit(2)
@@ -216,10 +213,10 @@ if __name__ == '__main__':
     if ( config.has_option("main", "tracker") ):
         tracker_id = config.get("main", "tracker")
     else:
-        tracker_id = "hamster:HamsterTracker"
+        tracker_id = "hammy:HamsterTracker"
    
     [module,cl] = tracker_id.split(':')
-    
+   
     # a little magical dynamic loading of modules
     exec("from trackers.%s import %s as Tracker" % (module,cl))
     exec("activity_tracker = Tracker()")
@@ -275,7 +272,6 @@ if __name__ == '__main__':
 
     if ( daemonize ):
         daemonizer.start(main_loop, out, err, pidfile)
-
-    atexit.register(on_shutdown)
-    main_loop()
+    else:
+        main_loop()
         

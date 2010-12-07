@@ -22,6 +22,9 @@ class ActivityLogTracker(tracker.Tracker):
         self.log.write("%s - START %s\n" % (current, self.current_activity))
         self.log.flush()
         self.name = name
+   
+    def destroy(self):
+        self.log.close()
         
     def stop(self):
         current = time.asctime()

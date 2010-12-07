@@ -19,10 +19,19 @@ class HamsterTracker(tracker.Tracker):
         
     def start(self, name, category, description, tags = []):
         fact = stuff.Fact(name, category, description, tags)
-        self.storage.add_fact(fact)
+        return self.storage.add_fact(fact)
     
     def stop(self):
         id(None)
         
     def get_current_activity(self):
-        return self.storage.get_todays_facts()[-1].activity
+        facts = self.storage.get_todays_facts()
+        
+        if ( len(facts) > 1 ):
+            return facts[-1].activity
+        
+        return None
+    
+    def destroy(self):
+        self.storage.stop_tracking()
+            
