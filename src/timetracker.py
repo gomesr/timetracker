@@ -31,7 +31,10 @@ import configuration
 
 # globals
 global activities_dict
+global activities_dict_keys
 global tags_dict
+global tags_dict_keys
+
 global tracker_sleep
 global activity_tracker
 
@@ -47,44 +50,43 @@ def on_shutdown():
 
 def window_changed(title):
     global activities_dict
+    global activities_dict_keys
     global tags_dict
+    global tags_dict_keys
     global laststatus
+    global activity_tracker
 
     title = title.replace("#","")
     aux = activity_tracker.get_current_activity()
-    
+    print("current %s" % aux)
     if ( aux != None and aux.find('#ttstop') != -1 ):
         print("timetracker can not touch [%s]" % aux)
         return
         
     if ( title != None ):
-        words = title.lower().split(' ') 
-        activity = None
         tags = []        
-       
-        activites_dict_keys = activities_dict.keys()
-        tags_dict_keys =  tags_dict.keys()
       
-        for word in words:
-            # once the first activity is found that is the one that represents
-            # this task
-            if ( activity == None ):
-                for key in activites_dict_keys:
-                    if ( key in word ):
-                        activity = activities_dict[key]
-                        break
+        activity = None
+        title = title.lower()
+        
+        # once the first activity is found that is the one that represents
+        # this task
+        for key in activities_dict_keys:
+            if ( key in title ):
+                activity = activities_dict[key]
+                break
           
-            # there is no restrictions in the number of tags you can add to 
-            # any ActivityLogTracker 
-            for key in tags_dict_keys:
-                if ( key in word ):
-                    aux_tags = tags_dict[key]
-                    for t in aux_tags.split(','):
-                        tags.append(t)
+        # there is no restrictions in the number of tags you can add to 
+        # any ActivityLogTracker 
+        for key in tags_dict_keys:
+            if ( key in title ):
+                aux_tags = tags_dict[key]
+                for t in aux_tags.split(','):
+                    tags.append(t)
+                    
         tags = set(tags)
         
         if ( activity != None ):
-            aux = activity_tracker.get_current_activity()
             already_done = False
     
             if ( aux != None ):
@@ -107,16 +109,35 @@ def window_changed(title):
         else:
             print("unknown activity [%s]" % title)
 
+def reorder(keys,dictionary):
+    for key in keys:
+        index = key.find('.')
+        if ( index != -1 ):
+            nkey = key[0:index]
+            index = int(key[index+1])
+            dictionary[nkey] = dictionary[key]
+            del dictionary[key]
+            keys.remove(key)
+            keys.insert(index,nkey)
+            
+    return keys
+                
 def load_defaults(config):  
     global activities_dict
+    global activities_dict_keys
     global tags_dict
+    global tags_dict_keys
     
     titems = config.items('tags')
     tags_dict = dict([(str.lower(x),y) for (x,y) in titems])
-        
+    tags_dict_keys = tags_dict.keys()
+    tags_dict_keys = reorder(tags_dict_keys, tags_dict)
+    
     aitems = config.items('activities')
     activities_dict = dict([(str.lower(x),y) for (x,y) in aitems])
-
+    activities_dict_keys = activities_dict.keys()
+    activities_dict_keys = reorder(activities_dict_keys, activities_dict)
+    
 def usage():
     print("")
     print("timertracker [-d] [-s] [-h] [-c] [-l configfile]")
@@ -128,10 +149,25 @@ def usage():
  
 def main_loop():
     global windowmanager 
-    atexit.register(on_shutdown)
+    global activity_tracker
     
+    # load tracker
+    if ( config.has_option("main", "tracker") ):
+        tracker_id = config.get("main", "tracker")
+    else:
+        tracker_id = "hammy:HamsterTracker"
+   
+    [module,cl] = tracker_id.split(':')
+   
+    # a little magical dynamic loading of modules
+    exec("from trackers.%s import %s as Tracker" % (module,cl))
+    activity_tracker = Tracker()
+    print("loaded %s tracker" % module)
+
     windowmanager = wmfactory.load_windowmanager()
     windowmanager.start(window_changed)
+
+    atexit.register(on_shutdown)
     
     try:
         while ( True ):
@@ -141,9 +177,12 @@ def main_loop():
             
             if ( not(isactive) and current != "away" ):
                 activity_tracker.stop()
-                activity_tracker.start("away","","off to reality",[])
-           
-            if ( isactive and current == "away" ):
+                activity_tracker.start("away",
+                                       "",
+                                       "off to reality",
+                                       ["ttaway","away"])
+            
+            if ( isactive and current.find("#ttaway") != -1 ):
                 '''
                 return to the previous task but make sure to wipe out the last 
                 status so that the tool cn continue to track correctly
@@ -208,19 +247,6 @@ if __name__ == '__main__':
     else:
         print("create a new timetracker config file with the -c option")
         exit(2)
-
-    # load tracker
-    if ( config.has_option("main", "tracker") ):
-        tracker_id = config.get("main", "tracker")
-    else:
-        tracker_id = "hammy:HamsterTracker"
-   
-    [module,cl] = tracker_id.split(':')
-   
-    # a little magical dynamic loading of modules
-    exec("from trackers.%s import %s as Tracker" % (module,cl))
-    exec("activity_tracker = Tracker()")
-    print("loaded %s tracker" % module)
     
     if ( config.has_option("main", "update.interval") ):
         tracker_sleep = int(config.get("main", "update.interval"))
